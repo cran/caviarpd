@@ -1,9 +1,7 @@
-#![allow(dead_code)]
-
-// Help: https://docs.rs/libR-sys, https://github.com/hadley/r-internals
-
 pub mod r;
-pub use r::SEXPExt;
-pub mod rinternals;
-pub use rinternals::SEXP;
+pub mod rbindings;
 
+pub use r::{NewProtected, Pc, Rval, TryNewProtected};
+
+/// A procedural macro to facilitate calling a Rust function from R.
+pub use roxido_macro::roxido;

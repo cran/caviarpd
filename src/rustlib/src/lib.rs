@@ -1,19 +1,16 @@
-#![allow(dead_code)]
-
 mod registration;
-
-// Help: https://docs.rs/libR-sys, https://github.com/hadley/r-internals
 
 use dahl_salso::clustering::Clusterings;
 use dahl_salso::optimize::{minimize_by_salso, SALSOParameters};
 use dahl_salso::{LabelType, LossFunction, PartitionDistributionInformation};
-use roxido::*;
 use epa::epa::{sample, EpaParameters, SquareMatrixBorrower};
 use epa::perm::Permutation;
-use rand::SeedableRng;
 use rand::Rng;
+use rand::SeedableRng;
 use rand_pcg::Pcg64Mcg;
+use roxido::*;
 use std::convert::TryFrom;
+use std::convert::TryInto;
 
 fn sample_epa_engine<T: Rng>(
     n_samples: usize,
@@ -66,59 +63,56 @@ fn sample_epa_engine<T: Rng>(
     (samples, n_clusters)
 }
 
-#[no_mangle]
-pub extern "C" fn sample_epa(
-    n_samples: SEXP,
-    similarity: SEXP,
-    mass: SEXP,
-    discount: SEXP,
-    n_cores: SEXP,
-) -> SEXP {
-    let mut rng = Pcg64Mcg::from_seed(r::random_bytes_from_r::<16>());
+#[roxido]
+fn sample_epa(
+    n_samples: Rval,
+    similarity: Rval,
+    mass: Rval,
+    discount: Rval,
+    n_cores: Rval,
+) -> Rval {
+    let mut rng = Pcg64Mcg::from_seed(r::random_bytes::<16>());
     let n_samples = n_samples.as_usize();
-    let n_items = similarity.nrow_usize();
+    let n_items = similarity.nrow();
     let (samples, _) = sample_epa_engine(
         n_samples,
         n_items,
-        similarity.as_double_slice(),
-        mass.as_double(),
-        discount.as_double(),
-        usize::try_from(n_cores.as_integer()).unwrap(),
+        similarity.try_into().unwrap(),
+        mass.into(),
+        discount.into(),
+        n_cores.as_usize(),
         &mut rng,
     );
     let n_samples = samples.len() / n_items;
-    let result = r::integer_matrix(i32::try_from(n_samples).unwrap(), i32::try_from(n_items).unwrap()).protect();
-    let result_slice = result.as_integer_slice_mut();
+    let (result, result_slice) = Rval::new_matrix_integer(n_samples, n_items, &mut pc);
     for i in 0..n_items {
         for j in 0..n_samples {
             result_slice[i * n_samples + j] = i32::from(samples[j * n_items + i] + 1);
         }
     }
-    r::unprotect(1);
     result
 }
 
-
-#[no_mangle]
-pub extern "C" fn caviarpd_n_clusters(
-    n_samples: SEXP,
-    similarity: SEXP,
-    mass: SEXP,
-    discount: SEXP,
-    use_vi: SEXP,
-    n_runs: SEXP,
-    max_size: SEXP,
-    n_cores: SEXP,
-) -> SEXP {
-    let mut rng = Pcg64Mcg::from_seed(r::random_bytes_from_r::<16>());
+#[roxido]
+fn caviarpd_n_clusters(
+    n_samples: Rval,
+    similarity: Rval,
+    mass: Rval,
+    discount: Rval,
+    use_vi: Rval,
+    n_runs: Rval,
+    max_size: Rval,
+    n_cores: Rval,
+) -> Rval {
+    let mut rng = Pcg64Mcg::from_seed(r::random_bytes::<16>());
     let n_samples = n_samples.as_usize();
-    let n_items = similarity.nrow_usize();
+    let n_items = similarity.nrow();
     let (samples, n_clusters) = sample_epa_engine(
         n_samples,
         n_items,
-        similarity.as_double_slice(),
-        mass.as_double(),
-        discount.as_double(),
+        similarity.try_into().unwrap(),
+        mass.into(),
+        discount.into(),
         n_cores.as_usize(),
         &mut rng,
     );
@@ -133,11 +127,11 @@ pub extern "C" fn caviarpd_n_clusters(
     };
     let p = SALSOParameters {
         n_items,
-        max_size: LabelType::try_from(max_size.as_integer()).unwrap(),
+        max_size: LabelType::try_from(max_size.as_i32()).unwrap(),
         max_size_as_rf: false,
         max_scans: u32::MAX,
         max_zealous_updates: 10,
-        n_runs: u32::try_from(n_runs.as_integer()).unwrap(),
+        n_runs: u32::try_from(n_runs.as_i32()).unwrap(),
         prob_sequential_allocation: 0.5,
         prob_singletons_initialization: 0.0,
     };
@@ -146,8 +140,9 @@ pub extern "C" fn caviarpd_n_clusters(
         loss_function,
         &p,
         f64::INFINITY,
-        u32::try_from(n_cores.as_integer()).unwrap(),
+        u32::try_from(n_cores.as_i32()).unwrap(),
         &mut rng,
     );
-    r::integer((fit.clustering.into_iter().max().unwrap() + 1) as i32)
+    let result = fit.clustering.into_iter().max().unwrap() + 1;
+    Rval::try_new(result, &mut pc).unwrap()
 }
