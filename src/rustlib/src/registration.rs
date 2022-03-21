@@ -14,12 +14,22 @@ mod registration;
 use roxido::*;
 
 #[roxido]
-fn sample_epa(nSamples: Rval, similarity: Rval, unnamed1: Rval, discount: Rval, nCores: Rval) -> Rval {
+fn caviarpd_algorithm2(similarity: Rval, unnamed1: Rval, unnamed2: Rval, mass: Rval, nSamples: Rval, gridLength: Rval, unnamed3: Rval, unnamed4: Rval, doVI: Rval, maxNClusters: Rval, nRuns: Rval, nCores: Rval) -> Rval {
     Rval::nil()
 }
 
 #[roxido]
-fn caviarpd_n_clusters(nSamplesSearch: Rval, similarity: Rval, mass: Rval, discount: Rval, unnamed1: Rval, unnamed2: Rval, maxNClusters: Rval, nCores: Rval) -> Rval {
+fn sample_epa(nSamples: Rval, similarity: Rval, unnamed1: Rval, nCores: Rval) -> Rval {
+    Rval::nil()
+}
+
+#[roxido]
+fn caviarpd_n_clusters(nSamplesSearch: Rval, similarity: Rval, mass: Rval, doVI: Rval, nRuns: Rval, maxNClusters: Rval, nCores: Rval) -> Rval {
+    Rval::nil()
+}
+
+#[roxido]
+fn caviarpd_mass(expected_number_of_clusters: Rval, n_items: Rval) -> Rval {
     Rval::nil()
 }
 */
@@ -28,19 +38,31 @@ use roxido::*;
 
 #[no_mangle]
 extern "C" fn R_init_caviarpd_librust(info: *mut rbindings::DllInfo) {
-    let mut call_routines = Vec::with_capacity(2);
-    let mut _names: Vec<std::ffi::CString> = Vec::with_capacity(2);
+    let mut call_routines = Vec::with_capacity(4);
+    let mut _names: Vec<std::ffi::CString> = Vec::with_capacity(4);
+    _names.push(std::ffi::CString::new(".caviarpd_algorithm2").unwrap());
+    call_routines.push(rbindings::R_CallMethodDef {
+        name: _names.last().unwrap().as_ptr(),
+        fun: unsafe { std::mem::transmute(crate::caviarpd_algorithm2 as *const u8) },
+        numArgs: 12,
+    });
     _names.push(std::ffi::CString::new(".sample_epa").unwrap());
     call_routines.push(rbindings::R_CallMethodDef {
         name: _names.last().unwrap().as_ptr(),
         fun: unsafe { std::mem::transmute(crate::sample_epa as *const u8) },
-        numArgs: 5,
+        numArgs: 4,
     });
     _names.push(std::ffi::CString::new(".caviarpd_n_clusters").unwrap());
     call_routines.push(rbindings::R_CallMethodDef {
         name: _names.last().unwrap().as_ptr(),
         fun: unsafe { std::mem::transmute(crate::caviarpd_n_clusters as *const u8) },
-        numArgs: 8,
+        numArgs: 7,
+    });
+    _names.push(std::ffi::CString::new(".caviarpd_mass").unwrap());
+    call_routines.push(rbindings::R_CallMethodDef {
+        name: _names.last().unwrap().as_ptr(),
+        fun: unsafe { std::mem::transmute(crate::caviarpd_mass as *const u8) },
+        numArgs: 2,
     });
     call_routines.push(rbindings::R_CallMethodDef {
         name: std::ptr::null(),

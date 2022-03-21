@@ -2,6 +2,7 @@
 
 use crate::clust::Clustering;
 use crate::perm::Permutation;
+// use roots::find_root_regula_falsi as find_root;
 
 use rand::prelude::*;
 use std::slice;
@@ -13,7 +14,6 @@ pub struct EpaParameters<'a> {
     similarity: SimilarityBorrower<'a>,
     permutation: Permutation,
     mass: f64,
-    discount: f64,
 }
 
 impl<'a> EpaParameters<'a> {
@@ -21,7 +21,6 @@ impl<'a> EpaParameters<'a> {
         similarity: SimilarityBorrower<'a>,
         permutation: Permutation,
         mass: f64,
-        discount: f64,
     ) -> Option<Self> {
         if similarity.n_items() != permutation.n_items() {
             None
@@ -30,13 +29,37 @@ impl<'a> EpaParameters<'a> {
                 similarity,
                 permutation,
                 mass,
-                discount,
             })
         }
     }
 
     pub fn shuffle_permutation<T: Rng>(&mut self, rng: &mut T) {
         self.permutation.shuffle(rng);
+        /*
+        match std::env::var("DBD_METHOD").as_deref() {
+            Ok("jumps" | "biased") => {
+                self.permutation = {
+                    let mut permutation = Vec::with_capacity(self.permutation.n_items());
+                    let mut available: Vec<_> = (0..self.permutation.n_items()).collect();
+                    let start = rng.gen_range(0..available.len());
+                    let mut current_index = available.swap_remove(start);
+                    permutation.push(current_index);
+                    while !available.is_empty() {
+                        let index_and_weights = available
+                            .iter()
+                            .map(|i| self.similarity[(current_index, *i)])
+                            .enumerate();
+                        let (index, _) =
+                            Clustering::select(index_and_weights, false, 0, Some(rng), false);
+                        current_index = available.swap_remove(index);
+                        permutation.push(current_index);
+                    }
+                    Permutation::from_vector(permutation).unwrap()
+                }
+            }
+            _ => self.permutation.shuffle(rng),
+        }
+        */
     }
 }
 
@@ -155,13 +178,51 @@ impl<'a> SquareMatrixBorrower<'a> {
 
 pub fn sample<T: Rng>(parameters: &EpaParameters, rng: &mut T) -> Clustering {
     let ni = parameters.similarity.n_items();
-    let mass = parameters.mass;
-    let discount = parameters.discount;
+    let (mass, path): (f64, Option<Vec<f64>>) = (parameters.mass, None);
+    /*
+    let (mass, path) = match std::env::var("DBD_METHOD").as_deref() {
+        Ok("jumps") => {
+            let mut path: Vec<_> = std::iter::once(1.0)
+                .chain((1..ni).map(|i| {
+                    parameters.similarity[(
+                        parameters.permutation.get(i - 1),
+                        parameters.permutation.get(i),
+                    )]
+                }))
+                .collect();
+            let avg = path.iter().sum::<f64>() / (ni as f64);
+            for p in &mut path {
+                *p = (avg / *p).min(100.0);
+            }
+            let mass = parameters.mass;
+            let expected_number_of_clusters =
+                (0..ni).fold(0.0, |sum, i| sum + mass / (mass + (i as f64)));
+            let f = |m| {
+                (0..ni).fold(0.0, |sum, i| {
+                    let p = m * path[i];
+                    sum + p / (p + (i as f64))
+                }) - expected_number_of_clusters
+            };
+            let root = find_root(f64::EPSILON, 10.0 * mass, &f, &mut 1e-5_f64);
+            (
+                root.unwrap_or_else(|e| {
+                    println!("Root finding error.... {e}");
+                    mass
+                }),
+                Some(path),
+            )
+        }
+        _ => (parameters.mass, None),
+    };
+    */
     let mut clustering = Clustering::unallocated(ni);
     for i in 0..ni {
         let ii = parameters.permutation.get(i);
-        let qt = clustering.n_clusters() as f64;
-        let kt = ((i as f64) - discount * qt)
+        let jump_density = match path {
+            Some(ref path) => path[i],
+            None => 1.0,
+        };
+        let kt = (i as f64)
             / parameters
                 .similarity
                 .sum_of_row_subset(ii, parameters.permutation.slice_until(i));
@@ -170,7 +231,7 @@ pub fn sample<T: Rng>(parameters: &EpaParameters, rng: &mut T) -> Clustering {
             .map(|label| {
                 let n_items_in_cluster = clustering.size_of(label);
                 let weight = if n_items_in_cluster == 0 {
-                    mass + discount * qt
+                    mass * jump_density
                 } else {
                     kt * parameters
                         .similarity
@@ -178,9 +239,7 @@ pub fn sample<T: Rng>(parameters: &EpaParameters, rng: &mut T) -> Clustering {
                 };
                 (label, weight)
             });
-        let subset_index = clustering
-            .select(labels_and_weights, false, 0, Some(rng), true)
-            .0;
+        let subset_index = Clustering::select(labels_and_weights, false, 0, Some(rng), false).0;
         clustering.allocate(ii, subset_index);
     }
     clustering
