@@ -148,7 +148,11 @@ fn roxido_fn(options: Vec<syn::NestedMeta>, item_fn: syn::ItemFn) -> TokenStream
             #[no_mangle]
             extern "C" fn #name(#args) #output {
                 let result: Result<Rval,_> = std::panic::catch_unwind(|| {
-                    let mut pc = Pc::new();
+                    let pc = &mut Pc::new();
+                    #[allow(unused_macros)]
+                    macro_rules! rval {
+                        ($val:expr) => { Rval::new($val, pc) }
+                    }
                     #body
                 });
                 match result {
@@ -179,14 +183,18 @@ fn roxido_fn(options: Vec<syn::NestedMeta>, item_fn: syn::ItemFn) -> TokenStream
             #[no_mangle]
             extern "C" fn #name(#args) #output {
                 let result: Result<Rval,_> = std::panic::catch_unwind(|| {
-                    let mut pc = Pc::new();
+                    let pc = &mut Pc::new();
+                    #[allow(unused_macros)]
+                    macro_rules! rval {
+                        ($val:expr) => { Rval::new($val, pc) }
+                    }
                     #body
                 });
                 match result {
                     Ok(obj) => obj,
                     Err(_) => {
-                        let mut pc = crate::r::Pc::new();
-                        crate::Rval::new_error(format!("Panic in Rust function '{}' with 'roxido' attribute.", stringify!(#name)).as_str(), &mut pc)
+                        let pc = &mut crate::r::Pc::new();
+                        crate::Rval::new_error(format!("Panic in Rust function '{}' with 'roxido' attribute.", stringify!(#name)).as_str(), pc)
                     }
                 }
             }
