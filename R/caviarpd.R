@@ -22,23 +22,24 @@
 #'
 #' @references
 #'
-#' D. B. Dahl, D. J. Johnson, and P. Müller (2021), Search Algorithms and Loss
-#' Functions for Bayesian Clustering, [arXiv:2105.04451](https://arxiv.org/abs/2105.04451).
+#' D. B. Dahl, J. Andros, J. B. Carter (2022+), Cluster Analysis via Random Partition
+#' Distributions, \emph{Statistical Analysis and Data Mining}, accepted.
+#' \doi{10.1002/sam.11602}.
 #'
+#' D. B. Dahl, D. J. Johnson, and P. Müller (2022), Search Algorithms and Loss
+#' Functions for Bayesian Clustering, \emph{Journal of Computational and
+#' Graphical Statistics}, \doi{10.1080/10618600.2022.2069779}.
+#''
 #' @examples
 #' # To reduce load on CRAN servers, limit the number of samples, grid length, and CPU cores.
 #' set.seed(34)
 #' iris.dis <- dist(iris[,-5])
-#' # R_CARGO \dontrun{
-#' # R_CARGO # Example disabled since Cargo was not found when installing from source package.
-#' # R_CARGO # You can still run the example if you install Cargo. Hint: cargo::install().
 #' est <- caviarpd(distance=iris.dis, nClusters=c(2,4), nSamples=20, nCores=1)
 #' if ( require("salso") ) {
 #'   summ <- summary(est, orderingMethod=2)
 #'   plot(summ, type="heatmap")
 #'   plot(summ, type="mds")
 #' }
-#' # R_CARGO }
 #'
 #' @importFrom stats median
 #' @export
