@@ -1,7 +1,7 @@
 Package: caviarpd
 Type: Package
 Title: Cluster Analysis via Random Partition Distributions
-Version: 0.3.13
+Version: 0.3.14
 Authors@R: c(person(given = "David B.", family = "Dahl", role = c("aut", "cre"), email = "dahl@stat.byu.edu", comment = c(ORCID = "0000-0002-8173-1547")),
     person(given = "R. Jacob", family = "Andros", role = c("aut"), email = "androsrj@gmail.com", comment = c(ORCID = "0000-0002-1289-385X")),
     person(given = "J. Brandon", family = "Carter",role = c("aut"), email = "carterj4@icloud.com", comment = c(ORCID = "0000-0003-1687-0564")),
@@ -29,15 +29,15 @@ Description: Cluster analysis is performed using pairwise distance information a
              pairwise distances are the principal input to this procedure, it is most comparable to the hierarchical and k-medoids
              clustering methods. The method is Dahl, Andros, Carter (2022+) <doi:10.1002/sam.11602>.
 License: MIT + file LICENSE | Apache License 2.0
-URL: https://github.com/dbdahl/caviarpd
-BugReports: https://github.com/dbdahl/caviarpd/issues
+URL: https://github.com/dbdahl/caviarpd-package
+BugReports: https://github.com/dbdahl/caviarpd-package/issues
 Depends: R (>= 4.2.0)
 Suggests: salso (>= 0.3.0)
-SystemRequirements: Cargo (Rust's package manager), rustc (>= 1.66.1)
+SystemRequirements: Cargo (Rust's package manager), rustc (>= 1.67.1)
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2024-09-06 15:39:42 UTC; dahl
+Packaged: 2025-03-30 03:52:36 UTC; dahl
 Author: David B. Dahl [aut, cre] (<https://orcid.org/0000-0002-8173-1547>),
   R. Jacob Andros [aut] (<https://orcid.org/0000-0002-1289-385X>),
   J. Brandon Carter [aut] (<https://orcid.org/0000-0003-1687-0564>),
@@ -65,4 +65,4 @@ Author: David B. Dahl [aut, cre] (<https://orcid.org/0000-0002-8173-1547>),
   bluss [ctb] (Rust crates: matrixmultiply, rawpointer)
 Maintainer: David B. Dahl <dahl@stat.byu.edu>
 Repository: CRAN
-Date/Publication: 2024-09-06 16:00:12 UTC
+Date/Publication: 2025-03-30 04:10:02 UTC

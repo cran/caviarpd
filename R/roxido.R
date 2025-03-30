@@ -6,10 +6,10 @@
 # .Call(.caviarpd_n_clusters, n_samples, similarity, mass, use_vi, n_runs, max_size, n_cores)
 # .Call(.sample_epa, n_samples, similarity, mass, n_cores)
 
-#' @docType package
+#' @keywords internal
 #' @usage NULL
 #' @useDynLib caviarpd, .registration = TRUE
-NULL
+"_PACKAGE"
 
 .Kall <- function(...) {
   x <- .Call(...)
