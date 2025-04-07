@@ -1,8 +1,8 @@
-b049b031ff20830679a86f8b933fb69a *DESCRIPTION
+6ecf3bf817424719781e27bbad3171bc *DESCRIPTION
 4d820ebb544ae17ba7b77fd5ee40a910 *INSTALL
 053cc7e14948cdcd56d3babb6d54e5ee *LICENSE
 9082082d2ee5f2e99d9d89ec129ab62f *NAMESPACE
-d88083a6eb53e4b14c1ae26baee8038f *NEWS
+1df572bfb7bd21efd05596c9940e4d5c *NEWS
 5059c6459678d2c5466829f00e4516cd *R/DDCRPPartition.R
 502e9fceb2441f0d17ff69767a0dd77c *R/caviarpd.R
 f9448dc19f21ffd5a20401d723927bab *R/roxido.R
@@ -33,6 +33,6 @@ b4c0ae7153f29f18442e8187256bbb1f *src/rust/roxido/src/lib.rs
 1c1de529dcd1658c4edb133eb1f907fd *src/rust/roxido_macro/Cargo.toml
 8adc81b4dd3c00ef1db236dabe43e35b *src/rust/roxido_macro/src/lib.rs
 5c7c63d28043d4296ec098d8c495c8b0 *src/rust/src/lib.rs
-43c9d4f389f85e3fe8cda9ac85d28b1c *src/rust/vendor.tar.gz
+498a19c54e472b2f8a8b9fb39e22b6eb *src/rust/vendor.tar.gz
 0e9840d17c9888b42520280db5b847fa *src/shim.c
-735576786fdd0271f260e4f0b2b3a7ed *tools/build_rust_library.R
+68467a7fa701fb8c6ac2f57bf504e511 *tools/build_rust_library.R
